@@ -24,3 +24,5 @@ to the require section of your `composer.json` file.
 
 Usage
 -----
+
+# DON'T USE! IN DEVELOPING!
