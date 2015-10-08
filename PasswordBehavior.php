@@ -5,6 +5,7 @@ namespace bupy7\password;
 use Yii;
 use yii\validators\Validator;
 use app\components\ActiveRecord;
+use yii\base\Behavior;
 
 /**
  * Behavior for change and create password of user account.
