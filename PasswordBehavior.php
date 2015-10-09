@@ -39,23 +39,6 @@ class PasswordBehavior extends Behavior
      * @var boolean Check old password before save.
      */
     public $checkPassword = false;
-    /**
-     * @var integer Minimum length of password.
-     */
-    public $minLenPassword;
-    /**
-     * @var integer Maximum length of password.
-     */
-    public $maxLenPassword;
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->registerTranslations();
-    }
     
     /**
      * @inheritdoc
@@ -97,21 +80,12 @@ class PasswordBehavior extends Behavior
             );
             $owner->validators->append($validator);
         }
-        // string
+        // safe
         $attributes = [$newPasswordAttribute, $confirmedPasswordAttribute];
         if ($this->checkPassword) {
             $attributes[] = $oldPasswordAttribute;
         }
-        $validator = Validator::createValidator(
-            'string', 
-            $owner, 
-            $attributes,
-            [
-                'min' => $this->minLenPassword,
-                'max' => $this->maxLenPassword,
-                'skipOnEmpty' => $this->skipOnEmpty,
-            ]
-        );
+        $validator = Validator::createValidator('safe', $owner, $attributes);
         $owner->validators->append($validator);
     }
 
@@ -125,28 +99,30 @@ class PasswordBehavior extends Behavior
         $confirmedPasswordAttribute = $this->confirmedPasswordAttribute;
         
         // check old password
-        if ($this->checkPassword && $this->owner->$newPasswordAttribute && $this->skipOnEmpty) {
+        if ($this->checkPassword && !empty($this->owner->$newPasswordAttribute) && !$this->skipOnEmpty) {
             if (!empty($this->owner->$oldPasswordAttribute)) {
                 if (!$this->owner->validatePassword($this->owner->$oldPasswordAttribute)) {
                     $this->owner->addError(
                         $oldPasswordAttribute, 
-                        self::t(
-                            'OLD_PASSWORD_ENTER_INCORRECT', 
-                            [$this->owner->getAttributeLabel($oldPasswordAttribute)]
+                        Yii::t(
+                            'yii',
+                            '{attribute} is invalid.', 
+                            ['attribute' => $this->owner->getAttributeLabel($oldPasswordAttribute)]
                         )
                     );
                 }
             } else {
                 $this->owner->addError(
                     $oldPasswordAttribute, 
-                    self::t( 
-                        'OLD_PASSWORD_EMPTY', 
-                        [$this->owner->getAttributeLabel($oldPasswordAttribute)]
+                    Yii::t(
+                        'yii',
+                        '{attribute} cannot be blank.', 
+                        ['attribute' => $this->owner->getAttributeLabel($oldPasswordAttribute)]
                     )
                 );
             }
         }
-        // compare password
+        // compare
         $validator = Validator::createValidator(
             'compare', 
             $this->owner, 
@@ -169,34 +145,5 @@ class PasswordBehavior extends Behavior
         if (!empty($this->owner->$newPasswordAttribute)) {
             $this->owner->setPassword($this->owner->$newPasswordAttribute);
         }
-    }
-    
-    /**
-     * Registration of translation class.
-     */
-    protected function registerTranslations()
-    {
-        Yii::$app->i18n->translations['bupy7/password'] = [
-            'class' => 'yii\i18n\PhpMessageSource',
-            'forceTranslation' => true,
-            'basePath' => '@bupy7/password/messages',
-            'fileMap' => [
-                'bupy7/password' => 'core.php',
-            ],
-        ];
-    }
-    
-    /**
-     * Translates a message to the specified language.
-     * 
-     * @param string $message the message to be translated.
-     * @param array $params the parameters that will be used to replace the corresponding placeholders in the message.
-     * @param string $language the language code (e.g. `en-US`, `en`). If this is null, the current of application
-     * language.
-     * @return string
-     */
-    static public function t($message, $params = [], $language = null)
-    {
-        return Yii::t('bupy7/password', $message, $params, $language);
     }
 }
