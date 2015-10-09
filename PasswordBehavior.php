@@ -6,6 +6,7 @@ use Yii;
 use yii\validators\Validator;
 use app\components\ActiveRecord;
 use yii\base\Behavior;
+use yii\base\InvalidConfigException;
 
 /**
  * Behavior for change and create password of user account.
@@ -26,10 +27,6 @@ class PasswordBehavior extends Behavior
      * @var string Attribute name of confirmed password.
      */
     public $confirmedPasswordAttribute = 'confirmed_password';
-    /**
-     * @var string Attribute name where saving hash of password.
-     */
-    public $saveAttribute = 'password';
     /**
      * @var array Validation scenarios to which will be added to the validation rules.
      */
@@ -80,6 +77,10 @@ class PasswordBehavior extends Behavior
         if (!in_array($owner->scenario, $this->scenarios)) {
             return;
         }
+        if (!($owner instanceof PasswordInterface)) {
+            throw new InvalidConfigException('Class `' . get_class($owner) . '` must be an object implementing '
+                . '`PasswordInterface`');
+        }
         
         parent::attach($owner);
         
@@ -119,16 +120,14 @@ class PasswordBehavior extends Behavior
      */
     public function beforeValidate($event)
     {
-        $security = Yii::$app->getSecurity();
         $oldPasswordAttribute = $this->oldPasswordAttribute;
         $newPasswordAttribute = $this->newPasswordAttribute;
         $confirmedPasswordAttribute = $this->confirmedPasswordAttribute;
-        $saveAttribute = $this->saveAttribute;
         
         // check old password
         if ($this->checkPassword && $this->owner->$newPasswordAttribute && $this->skipOnEmpty) {
             if (!empty($this->owner->$oldPasswordAttribute)) {
-                if (!$security->validatePassword($this->owner->$oldPasswordAttribute, $this->owner->{$saveAttribute})) {
+                if (!$this->owner->validatePassword($this->owner->$oldPasswordAttribute)) {
                     $this->owner->addError(
                         $oldPasswordAttribute, 
                         self::t(
