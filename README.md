@@ -1,5 +1,3 @@
-# IN DEVELOPING
-
 yii2-password-behavior
 ======================
 Behavior for change and create password of user account.
