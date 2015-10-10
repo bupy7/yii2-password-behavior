@@ -27,8 +27,8 @@ to the require section of your `composer.json` file.
 Usage
 -----
 
-Implement your user identity model with
-`bupy7\password\PasswordInterface` and add following code:
+**Implement your user identity model with
+`bupy7\password\PasswordInterface` and add following code:**
 
 ```php
 use Yii;
@@ -50,7 +50,15 @@ public function setPassword($password)
 }
 ```
 
-Attach behavior to model in your controller:
+**Added following properties to your model:**
+
+```php
+public $old_password;
+public $new_password;
+public $confirmed_password;
+```
+
+**Attach behavior to model in your controller:**
 
 ```php
 use bupy7\password\PasswordBehavior;
@@ -58,6 +66,49 @@ use bupy7\password\PasswordBehavior;
 $model->attachBehavior('passwordBehavior', [
     'class' => PasswordBehavior::className(),
     // other configurations
+]);
+```
+
+### If you want set password with checking old password
+
+**In your controller:**
+
+```php
+use bupy7\password\PasswordBehavior;
+
+$model->attachBehavior('passwordBehavior', [
+    'class' => PasswordBehavior::className(),
+    'skipOnEmpty' => true,
+    'checkPassword' => true,
+    'scenarios' => [$model->scenario],
+]);
+```
+
+### If you want set new password without checking old password
+
+**In your controller:**
+
+```php
+use bupy7\password\PasswordBehavior;
+
+$model->attachBehavior('passwordBehavior', [
+    'class' => PasswordBehavior::className(),
+    'skipOnEmpty' => true,
+    'checkPassword' => false,
+    'scenarios' => [$model->scenario],
+]);
+```
+
+### If password must be set (example, registration)
+
+```php
+use bupy7\password\PasswordBehavior;
+
+$model->attachBehavior('passwordBehavior', [
+    'class' => PasswordBehavior::className(),
+    'skipOnEmpty' => false,
+    'checkPassword' => false,
+    'scenarios' => [$model->scenario],
 ]);
 ```
 
