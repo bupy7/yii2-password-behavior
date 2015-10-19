@@ -4,7 +4,7 @@ namespace bupy7\password;
 
 use Yii;
 use yii\validators\Validator;
-use app\components\ActiveRecord;
+use yii\db\ActiveRecord;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 
